@@ -1,11 +1,11 @@
 import csv
 import os
 from datetime import datetime
-
-from flask import Flask, jsonify
 import requests
+from airflow.providers.standard.operators.python import PythonOperator
 from dotenv import load_dotenv
-app = Flask(__name__)
+from airflow import DAG
+
 
 def configure():
     load_dotenv(".env")
@@ -43,13 +43,9 @@ def save_to_csv(data):
             writer.writeheader()
         writer.writerow(data)
 
-@app.route('/weather')
-def show_weather():
-    data = get_data()
-    print("Weather data requested via web:")
-    for key, value in data.items():
-        print(f"{key}: {value}")
-    return jsonify(data)
+
+def fetch_and_save_weather():
+    save_to_csv(get_data())
 
 if __name__ == '__main__':
     configure()
@@ -57,5 +53,14 @@ if __name__ == '__main__':
     print("Weather data: ")
     for key, value in data.items():
         print(f"{key}: {value}")
-    save_to_csv(data)
-    app.run()
+
+with DAG(
+        dag_id="weather",
+        start_date=datetime(2025, 7, 15),
+        schedule="@hourly",
+):
+    fetch_and_save_csv = PythonOperator(
+        task_id="fetch_and_save_csv",
+        python_callable=fetch_and_save_weather
+    )
+    fetch_and_save_csv.set_upstream()
