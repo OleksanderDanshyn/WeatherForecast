@@ -12,6 +12,8 @@ from sklearn.naive_bayes import GaussianNB
 import pandas as pd
 from sklearn.preprocessing import LabelEncoder
 
+import matplotlib.pyplot as plt
+
 def configure():
     load_dotenv(".env")
 
@@ -55,7 +57,7 @@ def fetch_and_save_weather():
     save_to_csv(get_data())
 
 def train_model():
-    df = pd.read_csv('weather.csv')
+    df = pd.read_csv('training_weather.csv')
     df = df.dropna(subset=['Clothing'])
     features = ['Temperature', 'Feels_like', 'Humidity', 'Wind', 'Cloudiness']
     x = df[features]
@@ -91,7 +93,6 @@ if __name__ == '__main__':
 
     print("\nPredicted clothing recommendation:")
     print(f">>> You should wear: {clothing}")
-
     save_to_csv(data, clothing)
 
 #with DAG(
